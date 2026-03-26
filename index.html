@@ -522,6 +522,20 @@
                 });
         }
 
+        function updateDate() {
+            const now = new Date();
+            const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+            const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+            const dayName = days[now.getDay()];
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = months[now.getMonth()];
+            const year = now.getFullYear();
+
+            document.getElementById("dateBox").innerText = `${day} ${month} ${year} | ${dayName}`;
+        }
+
+        updateDate();
         loadDashboard();
         loadData();
 
