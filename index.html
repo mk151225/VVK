@@ -367,20 +367,56 @@
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbwdTIh67O5ZqUVzMcYba34hLIY8afaDMi-boaixrhioBui9TC5YKVKNtsf_L6RIYXtgVw/exec";
+        const API = "https://script.google.com/macros/s/AKfycbw3WRui3crFLTibeet9SO6urIvPkV9CSi1Jf5ku_fJJQ5K3KS7i9O1t-QaNHNL1ziLbzg/exec";
 
         let isSubmitting = false;
 
-        function goData() {
-            // window.location.href = "data.html";
-            // Scroll to table or just reload data
-            loadData();
-            document.querySelector('#tbl').scrollIntoView({ behavior: 'smooth' });
+        function getVal(id) {
+            return document.getElementById(id).value.trim();
         }
 
         function submitData() {
-            // 🚫 block double click
+
             if (isSubmitting) return;
+
+            const sno = getVal("sno");
+            const worker = getVal("worker");
+            const mobile = getVal("mobile");
+            const service = getVal("service");
+            const amount = getVal("amount");
+            const incentive = getVal("incentive") || 0;
+            const mode = getVal("mode");
+
+            // VALIDATION
+            if (!sno || isNaN(sno)) {
+                alert("Enter valid S.No");
+                return;
+            }
+
+            if (!worker) {
+                alert("Select employee");
+                return;
+            }
+
+            if (mobile && !/^[0-9]{10}$/.test(mobile)) {
+                alert("Enter valid 10 digit mobile");
+                return;
+            }
+
+            if (!service) {
+                alert("Enter service");
+                return;
+            }
+
+            if (!amount || isNaN(amount) || Number(amount) <= 0) {
+                alert("Enter valid amount");
+                return;
+            }
+
+            if (!mode) {
+                alert("Select payment mode");
+                return;
+            }
 
             isSubmitting = true;
             const btn = document.getElementById("submitBtn");
@@ -391,39 +427,52 @@
                 method: "POST",
                 body: JSON.stringify({
                     action: "addEntry",
-                    sno: Number(sno.value),
-                    worker: worker.value,
-                    mobile: mobile.value,
-                    service: service.value,
-                    amount: amount.value,
-                    incentive: incentive.value || 0,
-                    mode: mode.value
+                    sno: Number(sno),
+                    worker: worker,
+                    mobile: mobile,
+                    service: service,
+                    amount: Number(amount),
+                    incentive: Number(incentive),
+                    mode: mode
                 })
             })
                 .then(() => {
                     clearForm();
                     loadDashboard();
-                    loadData(); // Refresh table
+                    loadData();
                 })
-                .catch(() => {
-                    alert("Network issue. Please try again.");
-                })
+                .catch(() => alert("Network error"))
                 .finally(() => {
-                    // 🔓 unlock button safely
                     isSubmitting = false;
                     btn.disabled = false;
                     btn.innerText = "SUBMIT";
                 });
         }
 
+        function deleteRow(sno) {
+            if (!confirm("Delete entry " + sno + "?")) return;
+
+            fetch(API, {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "deleteEntry",
+                    sno: sno
+                })
+            })
+                .then(() => {
+                    loadDashboard();
+                    loadData();
+                });
+        }
+
         function clearForm() {
-            sno.value = "";
-            worker.value = "";
-            mobile.value = "";
-            service.value = "";
-            amount.value = "";
-            incentive.value = "";
-            mode.value = "";
+            document.getElementById("sno").value = "";
+            document.getElementById("worker").value = "";
+            document.getElementById("mobile").value = "";
+            document.getElementById("service").value = "";
+            document.getElementById("amount").value = "";
+            document.getElementById("incentive").value = "";
+            document.getElementById("mode").value = "";
         }
 
         function loadDashboard() {
@@ -445,18 +494,30 @@
                 .then(r => r.json())
                 .then(rows => {
                     let html = `
-                    <tr>
-                        <th>S.No</th>
-                        <th>Worker</th>
-                        <th>Mobile</th>
-                        <th>Service</th>
-                        <th>Amount</th>
-                        <th>Mode</th>
-                        <th>Incentive</th>
-                    </tr>`;
+   <tr>
+     <th>S.No</th>
+     <th>Worker</th>
+     <th>Mobile</th>
+     <th>Service</th>
+     <th>Amount</th>
+     <th>Mode</th>
+     <th>Incentive</th>
+     <th>Delete</th>
+   </tr>`;
+
                     rows.forEach(r => {
-                        html += `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`;
+                        html += `
+     <tr>
+       ${r.map(c => `<td>${c}</td>`).join("")}
+       <td>
+         <button onclick="deleteRow(${r[0]})"
+         style="background:#ff4d4d;color:white;border:none;padding:6px 10px;border-radius:6px">
+         DELETE
+         </button>
+       </td>
+     </tr>`;
                     });
+
                     document.getElementById("tbl").innerHTML = html;
                 });
         }
@@ -464,7 +525,7 @@
         loadDashboard();
         loadData();
 
-        // Incentive Visibility Logic
+        // incentive logic
         const amountInput = document.getElementById("amount");
         const incentiveInput = document.getElementById("incentive");
 
@@ -473,20 +534,9 @@
                 incentiveInput.style.display = "block";
             } else {
                 incentiveInput.style.display = "none";
-                incentiveInput.value = ""; // Reset value when hidden
+                incentiveInput.value = "";
             }
         });
-
-        // Date Logic
-        function updateDate() {
-            const now = new Date();
-            const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-            // Example: Sat, Jan 7, 2026
-            document.getElementById("dateBox").innerText = now.toLocaleDateString('en-US', options).toUpperCase();
-        }
-        updateDate();
-        // Update every minute just in case day changes
-        setInterval(updateDate, 60000);
     </script>
 
 </body>
