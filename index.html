@@ -460,8 +460,20 @@
                 });
         }
 
+        let pressTimer;
+
+        function startPress(e, sno) {
+            pressTimer = window.setTimeout(function () {
+                deleteRow(sno);
+            }, 800); // 800ms duration for long press
+        }
+
+        function endPress() {
+            clearTimeout(pressTimer);
+        }
+
         function deleteRow(sno) {
-            if (!confirm("Delete entry " + sno + "?")) return;
+            if (!confirm(`Do you want to delete entry ${sno} and confirm?`)) return;
 
             fetch(API, {
                 method: "POST",
@@ -513,19 +525,17 @@
      <th>Amount</th>
      <th>Mode</th>
      <th>Incentive</th>
-     <th>Delete</th>
    </tr>`;
 
                     rows.forEach(r => {
                         html += `
-     <tr>
+     <tr ontouchstart="startPress(event, ${r[0]})" 
+         ontouchend="endPress()" 
+         ontouchmove="endPress()"
+         onmousedown="startPress(event, ${r[0]})" 
+         onmouseup="endPress()" 
+         oncontextmenu="return false">
        ${r.map(c => `<td>${c}</td>`).join("")}
-       <td>
-         <button onclick="deleteRow(${r[0]})"
-         style="background:#ff4d4d;color:white;border:none;padding:6px 10px;border-radius:6px">
-         DELETE
-         </button>
-       </td>
      </tr>`;
                     });
 
