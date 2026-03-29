@@ -32,15 +32,24 @@
         }
 
         .menu {
-            font-size: 24px;
+            width: 32px;
+            height: 32px;
             cursor: pointer;
             color: #d4af37;
-            transition: transform 0.2s;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .menu:hover {
             transform: scale(1.1);
             color: #ffffff;
+        }
+
+        .menu svg {
+            width: 28px;
+            height: 28px;
         }
 
         .grid {
@@ -304,7 +313,11 @@
             <div class="title">VVK SALON</div>
             <div id="dateBox" class="date-box"></div>
         </div>
-        <div class="menu" onclick="goData()">☰</div>
+        <div class="menu" onclick="goData()">
+            <svg viewBox="0 0 24 24">
+                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" fill="currentColor"></path>
+            </svg>
+        </div>
     </div>
 
     <!-- DASHBOARD -->
