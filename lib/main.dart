@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -38,31 +39,40 @@ class _SalonWebViewState extends State<SalonWebView> {
   bool _isLoading = true;
   bool _hasError = false;
 
+  bool get _isWebViewSupported =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS);
+
   // 🔗 Change this URL to your hosted page (GitHub Pages, etc.)
   // Or keep it as your Google Apps Script / any public URL.
   static const String _url =
-      'https://mkmandrake.github.io/vvk-salon/'; // ← UPDATE THIS
+      'https://mk151225.github.io/VVK/'; // ← UPDATE THIS
 
   @override
   void initState() {
     super.initState();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFF0D0D0D))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (_) => setState(() {
-            _isLoading = true;
-            _hasError = false;
-          }),
-          onPageFinished: (_) => setState(() => _isLoading = false),
-          onWebResourceError: (_) => setState(() {
-            _isLoading = false;
-            _hasError = true;
-          }),
-        ),
-      )
-      ..loadRequest(Uri.parse(_url));
+    if (_isWebViewSupported) {
+      _controller = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setBackgroundColor(const Color(0xFF0D0D0D))
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onPageStarted: (_) => setState(() {
+              _isLoading = true;
+              _hasError = false;
+            }),
+            onPageFinished: (_) => setState(() => _isLoading = false),
+            onWebResourceError: (_) => setState(() {
+              _isLoading = false;
+              _hasError = true;
+            }),
+          ),
+        )
+        ..loadRequest(Uri.parse(_url));
+    } else {
+      _isLoading = false;
+    }
   }
 
   Future<void> _reload() async {
@@ -106,38 +116,67 @@ class _SalonWebViewState extends State<SalonWebView> {
               )
             : null,
       ),
-      body: _hasError
+      body: !_isWebViewSupported
           ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.wifi_off, color: Color(0xFFD4AF37), size: 60),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Failed to load page',
-                    style: TextStyle(color: Colors.white70, fontSize: 16),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Check your internet connection',
-                    style: TextStyle(color: Colors.white38, fontSize: 13),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: _reload,
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Retry'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD4AF37),
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.info_outline, color: Color(0xFFD4AF37), size: 60),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'WebView Only Supported on Mobile',
+                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Please run this app on an Android or iOS device.\nOn Web, you can visit the link directly:',
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    SelectableText(
+                      _url,
+                      style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 16, decoration: TextDecoration.underline),
+                    ),
+                  ],
+                ),
               ),
             )
-          : WebViewWidget(controller: _controller),
+          : _hasError
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.wifi_off, color: Color(0xFFD4AF37), size: 60),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Failed to load page',
+                        style: TextStyle(color: Colors.white70, fontSize: 16),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Check your internet connection',
+                        style: TextStyle(color: Colors.white38, fontSize: 13),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: _reload,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Retry'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD4AF37),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+            : WebViewWidget(controller: _controller),
     );
   }
 }

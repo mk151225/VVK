@@ -272,13 +272,24 @@
                 padding: 12px;
             }
 
-            /* Table - Keep Compact as requested */
+            /* Table - Ensure all columns are visible on mobile */
             th,
             td {
-                padding: 10px 5px;
-                /* Compact table cells */
+                padding: 10px 8px;
                 font-size: 13px;
-                /* Kept small/standard */
+                white-space: nowrap; /* Prevent columns from shrinking too much */
+            }
+
+            .card.full {
+                align-items: flex-start; /* Fix: Ensure content starts from left, not center */
+                overflow-x: auto; /* Ensure horizontal scroll works */
+                -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+            }
+
+            table {
+                width: auto; /* Allow table to define its own width */
+                min-width: 100%; /* At least full width */
+                text-align: left; /* Better readability on mobile */
             }
         }
     </style>
