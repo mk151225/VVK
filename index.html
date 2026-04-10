@@ -179,6 +179,9 @@
             margin-top: 5px;
             letter-spacing: 1px;
             font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         /* TABLE STYLES FROM DATA.HTML */
@@ -286,19 +289,26 @@
             td {
                 padding: 10px 8px;
                 font-size: 13px;
-                white-space: nowrap; /* Prevent columns from shrinking too much */
+                white-space: nowrap;
+                /* Prevent columns from shrinking too much */
             }
 
             .card.full {
-                align-items: flex-start; /* Fix: Ensure content starts from left, not center */
-                overflow-x: auto; /* Ensure horizontal scroll works */
-                -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+                align-items: flex-start;
+                /* Fix: Ensure content starts from left, not center */
+                overflow-x: auto;
+                /* Ensure horizontal scroll works */
+                -webkit-overflow-scrolling: touch;
+                /* Smooth scroll on iOS */
             }
 
             table {
-                width: auto; /* Allow table to define its own width */
-                min-width: 100%; /* At least full width */
-                text-align: left; /* Better readability on mobile */
+                width: auto;
+                /* Allow table to define its own width */
+                min-width: 100%;
+                /* At least full width */
+                text-align: left;
+                /* Better readability on mobile */
             }
         }
     </style>
@@ -311,7 +321,9 @@
         <div></div> <!-- Spacer for layout balance if needed, or remove -->
         <div class="header-center">
             <div class="title">VVK SALON</div>
-            <div id="dateBox" class="date-box"></div>
+            <div id="dateBox" class="date-box" onmousedown="startLongPress()" onmouseup="endLongPress()"
+                onmouseleave="endLongPress()" ontouchstart="startLongPress()" ontouchend="endLongPress()"></div>
+            <input type="date" id="datePicker" style="display:none" onchange="changeDate(this.value)">
         </div>
         <div class="menu" onclick="goData()">
             <svg viewBox="0 0 24 24">
@@ -324,15 +336,15 @@
     <div class="grid">
 
         <div class="card">
-            <div class="label">ALI TOTAL</div>
-            <div class="value">Rs. <span id="aliTotal">0</span></div>
-            <div class="inc">INCENTIVE Rs. <span id="aliInc">0</span></div>
+            <div class="label">AYAN TOTAL</div>
+            <div class="value">Rs. <span id="ayanTotal">0</span></div>
+            <div class="inc">INCENTIVE Rs. <span id="ayanInc">0</span></div>
         </div>
 
         <div class="card highlight">
-            <div class="label">SAMEER TOTAL</div>
-            <div class="value">Rs. <span id="sameerTotal">0</span></div>
-            <div class="inc">INCENTIVE Rs. <span id="sameerInc">0</span></div>
+            <div class="label">ZUBAIR TOTAL</div>
+            <div class="value">Rs. <span id="zubairTotal">0</span></div>
+            <div class="inc">INCENTIVE Rs. <span id="zubairInc">0</span></div>
         </div>
 
         <div class="card">
@@ -361,8 +373,8 @@
         <input id="sno" placeholder="S.No">
         <select id="worker">
             <option value="">Employee</option>
-            <option>ALI</option>
-            <option>SAMEER</option>
+            <option>AYAN</option>
+            <option>ZUBAIR</option>
         </select>
 
         <input id="mobile" placeholder="Mobile Number">
@@ -394,9 +406,45 @@
         const API = "https://script.google.com/macros/s/AKfycbw3WRui3crFLTibeet9SO6urIvPkV9CSi1Jf5ku_fJJQ5K3KS7i9O1t-QaNHNL1ziLbzg/exec";
 
         let isSubmitting = false;
+        let selectedDate = null;
+        let resetTimer;
+        let datePressTimer;
 
         function getVal(id) {
             return document.getElementById(id).value.trim();
+        }
+
+        function startLongPress() {
+            datePressTimer = setTimeout(() => {
+                const picker = document.getElementById('datePicker');
+                if (picker.showPicker) {
+                    picker.showPicker();
+                } else {
+                    picker.click();
+                }
+            }, 1000); // 5 seconds
+        }
+
+        function endLongPress() {
+            clearTimeout(datePressTimer);
+        }
+
+        function changeDate(val) {
+            if (!val) return;
+            selectedDate = val;
+            updateDate(new Date(val));
+            loadDashboard();
+            loadData();
+
+            // Auto reset after 5 minutes
+            clearTimeout(resetTimer);
+            resetTimer = setTimeout(() => {
+                selectedDate = null;
+                updateDate();
+                loadDashboard();
+                loadData();
+                document.getElementById('datePicker').value = "";
+            }, 5 * 60 * 1000);
         }
 
         function submitData() {
@@ -419,11 +467,6 @@
 
             if (!worker) {
                 alert("Select employee");
-                return;
-            }
-
-            if (mobile && !/^[0-9]{10}$/.test(mobile)) {
-                alert("Enter valid 10 digit mobile");
                 return;
             }
 
@@ -473,16 +516,16 @@
                 });
         }
 
-        let pressTimer;
+        let deletePressTimer;
 
         function startPress(e, sno) {
-            pressTimer = window.setTimeout(function () {
+            deletePressTimer = window.setTimeout(function () {
                 deleteRow(sno);
             }, 800); // 800ms duration for long press
         }
 
         function endPress() {
-            clearTimeout(pressTimer);
+            clearTimeout(deletePressTimer);
         }
 
         function deleteRow(sno) {
@@ -512,21 +555,25 @@
         }
 
         function loadDashboard() {
-            fetch(API + "?action=getDashboard")
+            let url = API + "?action=getDashboard";
+            if (selectedDate) url += "&date=" + selectedDate;
+            fetch(url)
                 .then(r => r.json())
                 .then(d => {
                     gpay.innerText = d.gpay;
                     cash.innerText = d.cash;
                     total.innerText = d.total;
-                    aliTotal.innerText = d.aliTotal;
-                    sameerTotal.innerText = d.sameerTotal;
-                    aliInc.innerText = d.aliInc;
-                    sameerInc.innerText = d.sameerInc;
+                    ayanTotal.innerText = d.ayanTotal || d.aliTotal || 0;
+                    zubairTotal.innerText = d.zubairTotal || d.sameerTotal || 0;
+                    ayanInc.innerText = d.ayanInc || d.aliInc || 0;
+                    zubairInc.innerText = d.zubairInc || d.sameerInc || 0;
                 });
         }
 
         function loadData() {
-            fetch(API + "?action=getData")
+            let url = API + "?action=getData";
+            if (selectedDate) url += "&date=" + selectedDate;
+            fetch(url)
                 .then(r => r.json())
                 .then(rows => {
                     let html = `
@@ -556,8 +603,8 @@
                 });
         }
 
-        function updateDate() {
-            const now = new Date();
+        function updateDate(dateObj) {
+            const now = dateObj || new Date();
             const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
             const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
@@ -585,6 +632,14 @@
                 incentiveInput.value = "";
             }
         });
+
+        // AUTO REFRESH LOGIC (Real-time sync)
+        setInterval(() => {
+            if (!isSubmitting && document.visibilityState === 'visible') {
+                loadDashboard();
+                loadData();
+            }
+        }, 10000); // Refresh every 10 seconds
     </script>
 
 </body>
