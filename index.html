@@ -320,7 +320,14 @@
     <div class="top">
         <div></div> <!-- Spacer for layout balance if needed, or remove -->
         <div class="header-center">
-            <div class="title">VVK SALON</div>
+            <div class="title"
+     onmousedown="startDeleteAllPress()"
+     onmouseup="cancelDeleteAllPress()"
+     onmouseleave="cancelDeleteAllPress()"
+     ontouchstart="startDeleteAllPress()"
+     ontouchend="cancelDeleteAllPress()">
+     VVK SALON
+</div>
             <div id="dateBox" class="date-box" onmousedown="startLongPress()" onmouseup="endLongPress()"
                 onmouseleave="endLongPress()" ontouchstart="startLongPress()" ontouchend="endLongPress()"></div>
             <input type="date" id="datePicker" style="display:none" onchange="changeDate(this.value)">
@@ -403,7 +410,36 @@
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbxLXqn5pzfWwz2N8rM-Ibp5tTz5JZ1zNHGtiMIQrXdNrdEyK9vLwdCc1VrJHO_9yGSVfw/exec";
+        let deleteAllTimer;
+
+function startDeleteAllPress() {
+
+  deleteAllTimer = setTimeout(() => {
+
+    if (!confirm("Delete ALL entries?")) {
+      return;
+    }
+
+    fetch(API,{
+      method:"POST",
+      body:JSON.stringify({
+        action:"deleteAll"
+      })
+    })
+    .then(() => {
+      alert("All data deleted");
+      loadDashboard();
+      loadData();
+    });
+
+  },3000);
+
+}
+
+function cancelDeleteAllPress() {
+  clearTimeout(deleteAllTimer);
+}
+        const API = "https://script.google.com/macros/s/AKfycbzTOSiLMy0q3Nl6AAYI3sdOglJHWQ0-y8F3MrdOyZIGVCekYB9fv89sDZXbuTmyYGUSBQ/exec";
 
         let isSubmitting = false;
         let selectedDate = null;
