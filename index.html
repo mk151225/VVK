@@ -343,15 +343,15 @@
     <div class="grid">
 
         <div class="card">
-            <div class="label">AYAN TOTAL</div>
+            <div class="label">ALI TOTAL</div>
             <div class="value">Rs. <span id="ayanTotal">0</span></div>
             <div class="inc">INCENTIVE Rs. <span id="ayanInc">0</span></div>
         </div>
 
         <div class="card highlight">
-            <div class="label">ZUBAIR TOTAL</div>
-            <div class="value">Rs. <span id="zubairTotal">0</span></div>
-            <div class="inc">INCENTIVE Rs. <span id="zubairInc">0</span></div>
+            <div class="label">FAIZAN TOTAL</div>
+            <div class="value">Rs. <span id="FAIZANTotal">0</span></div>
+            <div class="inc">INCENTIVE Rs. <span id="FAIZANInc">0</span></div>
         </div>
 
         <div class="card">
@@ -380,8 +380,8 @@
         <input id="sno" placeholder="S.No">
         <select id="worker">
             <option value="">Employee</option>
-            <option>AYAN</option>
-            <option>ZUBAIR</option>
+            <option>ALI</option>
+            <option>FAIZAN</option>
         </select>
 
         <input id="mobile" placeholder="Mobile Number">
@@ -600,9 +600,9 @@ function cancelDeleteAllPress() {
                     cash.innerText = d.cash;
                     total.innerText = d.total;
                     ayanTotal.innerText = d.ayanTotal || d.aliTotal || 0;
-                    zubairTotal.innerText = d.zubairTotal || d.sameerTotal || 0;
+                    FAIZANTotal.innerText = d.FAIZANTotal || d.sameerTotal || 0;
                     ayanInc.innerText = d.ayanInc || d.aliInc || 0;
-                    zubairInc.innerText = d.zubairInc || d.sameerInc || 0;
+                    FAIZANInc.innerText = d.FAIZANInc || d.sameerInc || 0;
                 });
         }
 
